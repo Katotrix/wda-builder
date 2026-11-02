@@ -15,6 +15,8 @@ An original 9:16 short built in the style of the reference video (a 3D-animated 
 1. `tts.py <dir>` – Kokoro TTS (`am_michael`), one clip per line → `vo.wav` + `timing.json`.
    Model files: kokoro-onnx GitHub release `model-files-v1.0` (`kokoro-v1.0.onnx`, `voices-v1.0.bin`) in `<dir>/voice/`.
 2. `music.py <dir> 40` – procedural pizzicato/glock music bed + whoosh SFX.
-3. Put one 16:9 render per shot in `<dir>/img/sNN.png` (see `shots.json`; subject centred, it is cropped to 9:16).
+3. `scenes.py <shot> <dir>/rend anim 16 0.75` – builds each shot in Blender (`pip install bpy`) from primitives:
+   stylised 3D kids, teal studio stage, snow-brick fort, noodle ramp, bungee slingshot, periscope, snowy backyard.
+   `render_all.sh` renders all 15 shots (~8 s/frame on 4 CPU cores, ~1100 frames).
 4. `render.py <dir> out.mp4` – Ken-Burns camera moves, flash/whip transitions, captions.
-5. Mix: `ffmpeg -i out.mp4 -i vo.wav -i music.wav ...` (voice at -14 LUFS, music ducked ~-20 dB).
+5. `sfx.py <dir>` + `mix.sh <dir> out.mp4 final.mp4` – whooshes on whip-pans, shimmer on flash cuts, splat on the hit; voice normalised to -15 LUFS over a quiet music bed.

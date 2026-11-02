@@ -52,9 +52,32 @@ def src(sid):
             ImageDraw.Draw(im).text((900,500),sid,fill="white")
         imgcache[sid]=im
     return imgcache[sid]
+import glob
+seqcache={}
+def seq(sid):
+    if sid not in seqcache: seqcache[sid]=sorted(glob.glob(S+"/rend/"+sid+"/*.png"))
+    return seqcache[sid]
+def scope(im):
+    """periscope view: circular window, dark surround, crosshair"""
+    w,h=im.size; m=Image.new("L",(w,h),0); d=ImageDraw.Draw(m); R=int(w*0.46); cx,cy=w//2,int(h*0.45)
+    d.ellipse((cx-R,cy-R,cx+R,cy+R),fill=255); m=m.filter(ImageFilter.GaussianBlur(6))
+    bg=Image.new("RGB",(w,h),(8,10,14)); out=Image.composite(im,bg,m); dd=ImageDraw.Draw(out)
+    dd.ellipse((cx-R,cy-R,cx+R,cy+R),outline=(30,30,30),width=10)
+    for a,b in (((cx-R+30,cy),(cx-25,cy)),((cx+25,cy),(cx+R-30,cy)),((cx,cy-R+30),(cx,cy-25)),((cx,cy+25),(cx,cy+R-30))):
+        dd.line((a,b),fill=(20,20,20),width=3)
+    return out
 def view(sid,u):
     """u in [0,1] progress through shot -> 720x1280 frame"""
-    sh=shots[sid]; im=src(sid); iw,ih=im.size
+    sh=shots[sid]
+    fs=seq(sid)
+    if fs:
+        k=min(len(fs)-1,max(0,int(round(u*(len(fs)-1)))))
+        im=Image.open(fs[k]).convert("RGB")
+        if sh.get("mask")=="scope": im=scope(im)
+        z=1.0+0.05*ease(u)
+        iw,ih=im.size; cw,ch=iw/z,ih/z; x0=(iw-cw)/2; y0=(ih-ch)/2
+        return im.resize((W,H),Image.LANCZOS,box=(x0,y0,x0+cw,y0+ch))
+    im=src(sid); iw,ih=im.size
     e=ease(u) if sh.get("ease",True) else u
     z=sh["z"][0]+(sh["z"][1]-sh["z"][0])*e
     cx=sh["x"][0]+(sh["x"][1]-sh["x"][0])*e; cy=sh["y"][0]+(sh["y"][1]-sh["y"][0])*e
